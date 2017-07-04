@@ -1,0 +1,66 @@
+version: '2'
+services:
+
+  bootnode:
+    container_name: bootnode
+    image: eth-private/bootnode
+    build: ./bootnode
+    # network_mode: bridge
+    ports:
+      - "30301:30301"
+      - "30303:30303"
+    networks:
+      ethereum-net:
+        ipv4_address: 172.77.0.101
+    restart: always
+
+  first:
+    container_name: first
+    image: ethereum/client-go
+    # network_mode: bridge
+    networks:
+      - ethereum-net
+    ports:
+      - "30301"
+      - "30303"
+    restart: always
+    # ports:
+    #   - "30303:30303"
+    volumes:
+      - /home/docker/config:/root/.ethereum
+      - /home/docker/data1:/data
+    # command: ["--datadir", "/data", "--networkid", "7277", "--nodekey", "/root/.ethereum/boot.key"]
+    command: ["--datadir", "/data", "--bootnodes=enode://a2760c120b5fed8841e162d562a8c05d76f32b9f0f9df948d6616edbfe77935b59cead744169522b678ffaca46eae00a6fad108475854a2ce95fc94eb215e9ec@172.77.0.101:30301"]
+
+  second:
+    container_name: second
+    image: ethereum/client-go
+    # network_mode: bridge
+    networks:
+      - ethereum-net
+    ports:
+      - "30301"
+      - "30303"
+    restart: always
+    volumes:
+      - /home/docker/config:/root/.ethereum
+      - /home/docker/data2:/data
+    command: ["--datadir", "/data", "--bootnodes=enode://a2760c120b5fed8841e162d562a8c05d76f32b9f0f9df948d6616edbfe77935b59cead744169522b678ffaca46eae00a6fad108475854a2ce95fc94eb215e9ec@172.77.0.101:30301"]
+
+  miner:
+    container_name: miner
+    image: ethereum/client-go
+    networks:
+      - ethereum-net
+    restart: always
+    volumes:
+      - /home/docker/config:/root/.ethereum
+      - /home/docker/miner:/data
+    command: ["--datadir", "/data", "--bootnodes=enode://a2760c120b5fed8841e162d562a8c05d76f32b9f0f9df948d6616edbfe77935b59cead744169522b678ffaca46eae00a6fad108475854a2ce95fc94eb215e9ec@172.77.0.101:30301", "--mine", "--minerthreads=1", "--etherbase=0x7df9a875a174b3bc565e6424a0050ebc1b2d1d82"]
+
+networks:
+  ethereum-net:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.77.0.0/24
