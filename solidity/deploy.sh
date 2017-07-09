@@ -1,0 +1,2 @@
+eval $(docker-machine env eschain)
+docker exec -it miner geth attach /data/geth.ipc --exec "var supply = 10000; personal.unlockAccount(eth.accounts[0], 'abc123'); var abi = $(cat ./json/token.json | jq '.contracts["token.sol:token"].abi'); var bin = $(cat ./json/token.json | jq '.contracts["token.sol:token"].bin'); var compiledContract = web3.eth.contract(JSON.parse(abi)); var token = compiledContract.new(supply, { from: eth.accounts[0], data: '0x' + bin, gas: 1000000 }, function (e, contract) { console.log('error: ' + e); token; }); "
